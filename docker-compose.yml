@@ -1,0 +1,31 @@
+services:
+    api:
+      build:
+        context: . 
+        dockerfile: Dockerfile
+      
+      container_name: metrics-api-${APP_VERSION}
+      ports: 
+        - 8000:8000 
+      environment:
+        - APP_NAME=System Metrics API
+        - APP_VERSION=v1.0
+        - DEBUG=True
+        - DATABASE_URL=sqlite:///./data/metrics.db
+        - API_KEY=${API_KEY:-default-api-key}
+      volumes: 
+        - ./data:/app/data
+      networks: 
+        - metric-network 
+      healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+        interval: 30s
+        timeout: 10s
+        retries: 3
+        start_period: 20s
+
+networks:
+  metric-network:
+
+volumes: 
+  metric-data:
