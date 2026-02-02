@@ -5,8 +5,9 @@ services:
         dockerfile: Dockerfile
       
       container_name: metrics-api-${APP_VERSION}
-      ports: 
-        - 8000:8000 
+      # Removing fastapi ports as we are using nginx as a reverse proxy now
+      # ports: 
+      #   - 8000:8000 
       environment:
         - APP_NAME=System Metrics API
         - APP_VERSION=v1.0
@@ -23,6 +24,26 @@ services:
         timeout: 10s
         retries: 3
         start_period: 20s
+
+    nginx:
+      image: nginx:alpine
+      container_name: "metrics-nginx"
+      restart: unless-stopped
+      ports:
+        - 80:80
+      volumes:
+        - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+        - ./nginx/logs:/var/log/nginx
+      depends_on:
+        - api 
+      networks:
+        - metric-network
+      healthcheck:
+        test: ["CMD", "wget", "-q", "--tries=1", "--spider", "http://localhost/nginx-health"]
+        interval: 30s 
+        timeout: 10s
+        retries: 3
+        start_period: 10s
 
 networks:
   metric-network:
