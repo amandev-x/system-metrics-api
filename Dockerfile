@@ -1,0 +1,14 @@
+FROM python:3.11-slim 
+WORKDIR /app 
+COPY requirements.txt .
+
+RUN apt-get update && rm -rf /var/lib/apt/lists/* && \
+    pip install --no-cache-dir -r requirements.txt 
+
+COPY . .
+
+# Create directory for SQLite database
+RUN mkdir -p app/data 
+
+EXPOSE 8000 
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
